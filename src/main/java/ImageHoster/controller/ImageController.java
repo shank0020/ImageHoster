@@ -65,9 +65,11 @@ public class ImageController {
     //this list is then sent to 'images/image.html' file and the tags are displayed
     @RequestMapping("images/{imageId}/{title}")
     public String showImage(@PathVariable("imageId") Integer id, @PathVariable("title") String title,Model model) {
+        String error = "Only the owner of the image can edit the image";
         Image image = imageService.getImageByID(id);
         model.addAttribute("image", image);
         model.addAttribute("tags", image.getTags());
+        model.addAttribute("editError", error);
         return "images/image";
     }
 
@@ -110,13 +112,24 @@ public class ImageController {
     //The method first needs to convert the list of all the tags to a string containing all the tags separated by a comma and then add this string in a Model type object
     //This string is then displayed by 'edit.html' file as previous tags of an image
     @RequestMapping(value = "/editImage")
-    public String editImage(@RequestParam("imageId") Integer imageId, Model model) {
+    public String editImage(@RequestParam("imageId") Integer imageId, HttpSession session,Model model) {
         Image image = imageService.getImage(imageId);
-
-        String tags = convertTagsToString(image.getTags());
+        User imageOwner = image.getUser();
+        User user = (User) session.getAttribute("loggeduser");
         model.addAttribute("image", image);
-        model.addAttribute("tags", tags);
-        return "images/edit";
+
+        if(user.getId() != imageOwner.getId()) {
+            String error = "Only the owner of the image can edit the image";
+            List<Tag> tags = image.getTags();
+            model.addAttribute("tags", tags);
+            model.addAttribute("editError", error);
+            return "images/image";
+        }
+        else {
+            String tags = convertTagsToString(image.getTags());
+            model.addAttribute("tags", tags);
+            return "images/edit";
+        }
     }
 
     //This controller method is called when the request pattern is of type 'images/edit' and also the incoming request is of PUT type
