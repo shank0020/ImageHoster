@@ -66,6 +66,8 @@ public class ImageController {
     @RequestMapping("images/{imageId}/{title}")
     public String showImage(@PathVariable("imageId") Integer id, @PathVariable("title") String title,Model model) {
         String error = "Only the owner of the image can edit the image";
+        String deleteError = "Only the owner of the image can delete the image";
+        model.addAttribute("deleteError", deleteError);
         Image image = imageService.getImageByID(id);
         model.addAttribute("image", image);
         model.addAttribute("tags", image.getTags());
@@ -171,8 +173,13 @@ public class ImageController {
     //The method calls the deleteImage() method in the business logic passing the id of the image to be deleted
     //Looks for a controller method with request mapping of type '/images'
     @RequestMapping(value = "/deleteImage", method = RequestMethod.DELETE)
-    public String deleteImageSubmit(@RequestParam(name = "imageId") Integer imageId) {
-        imageService.deleteImage(imageId);
+    public String deleteImageSubmit(@RequestParam(name = "imageId") Integer imageId, HttpSession session, Model model) {
+        Image image = imageService.getImage(imageId);
+        User imageOwner = image.getUser();
+        User user = (User) session.getAttribute("loggeduser");
+        if(user.getId() == imageOwner.getId()) {
+            imageService.deleteImage(imageId);
+        }
         return "redirect:/images";
     }
 
