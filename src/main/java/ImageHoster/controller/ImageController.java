@@ -65,13 +65,9 @@ public class ImageController {
     //this list is then sent to 'images/image.html' file and the tags are displayed
     @RequestMapping("images/{imageId}/{title}")
     public String showImage(@PathVariable("imageId") Integer id, @PathVariable("title") String title,Model model) {
-        String error = "Only the owner of the image can edit the image";
-        String deleteError = "Only the owner of the image can delete the image";
-        model.addAttribute("deleteError", deleteError);
         Image image = imageService.getImageByID(id);
         model.addAttribute("image", image);
         model.addAttribute("tags", image.getTags());
-        model.addAttribute("editError", error);
         return "images/image";
     }
 
@@ -109,10 +105,11 @@ public class ImageController {
 
     //This controller method is called when the request pattern is of type 'editImage'
     //This method fetches the image with the corresponding id from the database and adds it to the model with the key as 'image'
-    //The method then returns 'images/edit.html' file wherein you fill all the updated details of the image
+    //The method then returns 'images/edit.html' in case if the user is the owner of the image file wherein you fill all the updated details of the image
 
     //The method first needs to convert the list of all the tags to a string containing all the tags separated by a comma and then add this string in a Model type object
     //This string is then displayed by 'edit.html' file as previous tags of an image
+    //If the login user is not the owner of the image, editImage() method will display the error message,
     @RequestMapping(value = "/editImage")
     public String editImage(@RequestParam("imageId") Integer imageId, HttpSession session,Model model) {
         Image image = imageService.getImage(imageId);
@@ -170,17 +167,26 @@ public class ImageController {
 
 
     //This controller method is called when the request pattern is of type 'deleteImage' and also the incoming request is of DELETE type
-    //The method calls the deleteImage() method in the business logic passing the id of the image to be deleted
+    //The method calls the deleteImage() method if the login user is the owner of the image in the business logic passing the id of the image to be deleted
     //Looks for a controller method with request mapping of type '/images'
+    //If the login user is not the owner of the image deleteImageSubmit() method will display the error message and looks for images/image controller.
+
     @RequestMapping(value = "/deleteImage", method = RequestMethod.DELETE)
     public String deleteImageSubmit(@RequestParam(name = "imageId") Integer imageId, HttpSession session, Model model) {
         Image image = imageService.getImage(imageId);
         User imageOwner = image.getUser();
         User user = (User) session.getAttribute("loggeduser");
-        if(user.getId() == imageOwner.getId()) {
-            imageService.deleteImage(imageId);
+        if(user.getId() != imageOwner.getId()) {
+            String error = "Only the owner of the image can delete the image";
+            model.addAttribute("image", image);
+            model.addAttribute("tags", image.getTags());
+            model.addAttribute("deleteError", error);
+            return "images/image";
         }
-        return "redirect:/images";
+        else {
+            imageService.deleteImage(imageId);
+            return "redirect:/images";
+        }
     }
 
 
