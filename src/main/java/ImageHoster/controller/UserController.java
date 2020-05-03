@@ -47,7 +47,8 @@ public class UserController {
         String pattern = "(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[@#$%^&+=]).{3,}";
         if(password.matches(pattern)) {
             userService.registerUser(user);
-            return "redirect:/users/login";
+            return "users/login";
+            //return "redirect:/users/login";
         }
         else {
 

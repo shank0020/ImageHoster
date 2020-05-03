@@ -1,8 +1,10 @@
 package ImageHoster.controller;
 
+import ImageHoster.model.Comment;
 import ImageHoster.model.Image;
 import ImageHoster.model.Tag;
 import ImageHoster.model.User;
+import ImageHoster.service.CommentService;
 import ImageHoster.service.ImageService;
 import ImageHoster.service.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,6 +69,8 @@ public class ImageController {
     @RequestMapping("images/{imageId}/{title}")
     public String showImage(@PathVariable("imageId") Integer id, @PathVariable("title") String title,Model model) {
         Image image = imageService.getImageByID(id);
+        List<Comment> comments  = image.getComments();
+        model.addAttribute("comments", comments);
         model.addAttribute("image", image);
         model.addAttribute("tags", image.getTags());
         return "images/image";
