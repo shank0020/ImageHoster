@@ -5,6 +5,7 @@ import ImageHoster.model.User;
 import ImageHoster.model.UserProfile;
 import ImageHoster.service.ImageService;
 import ImageHoster.service.UserService;
+//import com.sun.org.apache.xpath.internal.operations.Mod;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -39,10 +40,24 @@ public class UserController {
 
     //This controller method is called when the request pattern is of type 'users/registration' and also the incoming request is of POST type
     //This method calls the business logic and after the user record is persisted in the database, directs to login page
+    //This method also validate the user password strength by displaying error message, password must contain atleast 1 alphabet, 1 number & 1 special character
     @RequestMapping(value = "users/registration", method = RequestMethod.POST)
-    public String registerUser(User user) {
-        userService.registerUser(user);
-        return "redirect:/users/login";
+    public String registerUser(User user, Model model) {
+        String password = user.getPassword();
+        String pattern = "(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[@#$%^&+=]).{3,}";
+        if(password.matches(pattern)) {
+            userService.registerUser(user);
+            return "redirect:/users/login";
+        }
+        else {
+
+            String error = "Password must contain atleast 1 alphabet, 1 number & 1 special character";
+            user = new User();
+            model.addAttribute("User", user);
+            model.addAttribute("passwordTypeError", error);
+
+            return "users/registration";
+        }
     }
 
     //This controller method is called when the request pattern is of type 'users/login'
