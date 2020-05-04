@@ -69,8 +69,8 @@ public class ImageController {
     //Here a list of tags is added in the Model type object
     //this list is then sent to 'images/image.html' file and the tags are displayed
     @RequestMapping("images/{imageId}/{title}")
-    public String showImage(@PathVariable("imageId") Integer id, @PathVariable("title") String title,Model model) {
-        Image image = imageService.getImageByID(id);
+    public String showImage(@PathVariable("imageId") Integer id, Model model) {
+        Image image = imageService.getImage(id);
         List<Comment> comments  = image.getComments();
         model.addAttribute("comments", comments);
         model.addAttribute("image", image);
